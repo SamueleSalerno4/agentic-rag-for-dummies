@@ -107,7 +107,6 @@ DOCUMENT_DIR = "docs"
 SUMMARY_DIR = "summaries"
 DB_PATH = "qdrant_db"
 SUMMARY_COLLECTION = "document_summaries"
-CHUNK_COLLECTION = "document_chunks"
 
 # Initialize embeddings
 dense_embeddings = HuggingFaceEmbeddings(
@@ -137,7 +136,6 @@ def ensure_collection(collection_name):
 
 # Create collections
 ensure_collection(SUMMARY_COLLECTION)
-ensure_collection(CHUNK_COLLECTION)
 
 # Initialize vector stores
 summary_vector_store = QdrantVectorStore(
@@ -195,9 +193,10 @@ _ = summary_vector_store.add_documents(summary_documents)
 The agent needs tools to interact with the retrieval system.
 
 ```python
+from typing import List
 from pathlib import Path
 
-def search_summaries(query: str, k: int = 3):
+def search_summaries(query: str, k: int = 3) -> List[dict]:
     """
     Search for the top K most relevant document summaries.
     
@@ -206,30 +205,37 @@ def search_summaries(query: str, k: int = 3):
         k: Number of results to return
         
     Returns:
-        List of relevant summary documents
+        List of relevant summary documents with their metadata
     """
-    return summary_vector_store.similarity_search(query, k=k)
+    results = summary_vector_store.similarity_search(query, k=k)
+    # Convert to dict format that can be passed between tools
+    return [
+        {
+            "content": doc.page_content,
+            "document_id": doc.metadata.get("document_id", ""),
+            "source": doc.metadata.get("source", "")
+        }
+        for doc in results
+    ]
 
-def retrieve_full_documents(summaries: list):
+def retrieve_full_documents(document_ids: List[str]) -> List[str]:
     """
-    Retrieve complete documents based on summary metadata.
+    Retrieve complete documents based on document IDs.
     
     Args:
-        summaries: List of summary documents
+        document_ids: List of document IDs to retrieve
         
     Returns:
         List of full document contents
     """
     full_documents = []
     
-    for summary in summaries:
-        # Get document ID from metadata
-        document_id = summary.metadata.get("document_id")
-        if not document_id:
+    for doc_id in document_ids:
+        if not doc_id:
             continue
             
         # Construct path to full document
-        document_path = Path(DOCUMENT_DIR) / f"{document_id}.md"
+        document_path = Path(DOCUMENT_DIR) / f"{doc_id}.md"
         
         if document_path.exists():
             with open(document_path, 'r', encoding='utf-8') as f:
@@ -253,24 +259,60 @@ The system prompt defines the agent's behavior and reasoning process.
 ```python
 from langchain_core.messages import SystemMessage
 
-SYSTEM_PROMPT = """You are an intelligent document retrieval assistant. Your goal is to answer user questions accurately using available documents.
+SYSTEM_PROMPT = """You are an intelligent document retrieval assistant specialized in answering questions accurately using available documents.
 
-Follow this reasoning process:
+Your task follows this precise workflow:
 
-1. **Analyze the query**: Understand what the user is asking for
-2. **Search summaries**: Use the search_summaries tool to find relevant documents (decide how many to retrieve)
-3. **Evaluate relevance**: Review the summaries and determine which documents are likely to contain the answer
-4. **Retrieve full documents**: Use retrieve_full_documents to get complete content for relevant documents
-5. **Verify relevance**: Check if the full documents actually contain the needed information
-6. **Generate answer**: Provide a clear, detailed answer based on the document content
-7. **Quality check**: Verify your answer addresses the user's question
-8. **Retry if needed**: If the answer isn't satisfactory, try different search terms or documents (maximum 3 attempts)
+1. **Analyze the question**: 
+   - Understand what the user is asking
+   - Identify the main topic and any sub-topics
 
-Important guidelines:
-- Only retrieve documents that are clearly relevant to the query
-- If no relevant documents are found after 3 attempts, explain what information is missing
-- Be concise but thorough in your responses
-- Always base your answers on the retrieved documents, don't make up information
+2. **Rewrite and split if necessary**: 
+   - Rephrase the question if it's unclear
+   - If the question covers multiple different topics, split it into sub-queries
+   - Each sub-query should address a single, specific topic
+
+3. **Retrieve top X summary documents**: 
+   - Decide how many summary documents to retrieve (the X value is your choice based on query complexity)
+   - Use the search_summaries tool for each sub-query
+   - Evaluate each retrieved summary to determine if it's relevant to the question
+   - Discard irrelevant summaries
+
+4. **Return exact document names**: 
+   - From the relevant summaries, extract the exact document_id with extension
+   - List which documents you're going to retrieve
+
+5. **Retrieve complete documents and provide answer**: 
+   - Use the retrieve_full_documents tool with the document_ids
+   - Read the full documents to find the answer
+
+6. **Verify document relevance**: 
+   - Check if each complete document is actually pertinent to the question
+   - Discard documents that are not relevant
+   - **If NONE of the documents are relevant, GO BACK TO STEP 1 and try again with different search terms**
+
+7. **Provide clear and detailed answer**: 
+   - Give a comprehensive response based on the documents
+   - Explain concepts clearly, assuming the user has no prior knowledge of the topic
+   - Use simple language and avoid jargon when possible
+
+8. **Verify answer completeness**: 
+   - Check that your complete answer is relevant and fully addresses the question
+   - Ensure all sub-queries (if any) have been answered
+
+9. **If answer is not satisfactory**: 
+   - **GO BACK TO STEP 1** and start the process again with a different approach
+
+10. **Loop limit**: 
+    - **Repeat this entire loop a MAXIMUM of 3 times**
+    - After 3 complete attempts, if you're still not confident in your answer, politely ask the user to rephrase their question more clearly
+
+**Critical rules**:
+- You MUST follow steps 1-10 in order
+- You MUST go back to step 1 if documents are not relevant (step 6) or answer is not satisfactory (step 9)
+- You MUST NOT exceed 3 complete loops through the entire process
+- Always base your answers strictly on the retrieved documents
+- Never make up information that isn't in the documents
 """
 
 system_message = SystemMessage(content=SYSTEM_PROMPT)
@@ -288,7 +330,6 @@ Now we create the agent graph that orchestrates the retrieval flow.
 from langchain_core.messages import HumanMessage
 from langgraph.graph import MessagesState, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.checkpoint.memory import InMemorySaver
 
 # Define the agent's decision-making node
 def agent_node(state: MessagesState):
@@ -298,9 +339,6 @@ def agent_node(state: MessagesState):
             [system_message] + state["messages"]
         )
     }
-
-# Initialize memory for conversation history
-memory = InMemorySaver()
 
 # Build the graph
 graph_builder = StateGraph(MessagesState)
