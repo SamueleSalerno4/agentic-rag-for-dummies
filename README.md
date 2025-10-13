@@ -1,4 +1,9 @@
-# agentic-rag-for-dummies
-A minimal Agentic RAG demo built with LangGraph — learn Retrieval-Augmented Agents in minutes.
+<p align="center">
+<img alt="Agentic RAG for Dummies Logo" src="assets/logo.png" width="300px">
+</p>
+<h2 align="center">Agentic RAG for Dummies</h2>
 
-# Coming Soong
+<p align="center">
+  ⚠️ <strong>Coming Soon!</strong></a>
+</p>
+
