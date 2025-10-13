@@ -16,6 +16,13 @@
   <a href="#usage">Usage</a>
 </p>
 
+<p align="center">
+  <strong>Quickstart here 👉</strong> 
+  <a href="https://colab.research.google.com/gist/GiovanniPasq/d201d07c82b9ef20703642199a873a12/agentic-rag-for-dummies.ipynb">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  </a>
+</p>
+
 ---
 
 ## Overview
