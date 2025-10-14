@@ -69,6 +69,9 @@ This project is designed to run on **Google Colab**. Install all dependencies wi
 !pip install -qU "langchain[google-genai]"
 !pip install -qU langchain langchain-community langchain-qdrant langchain-huggingface qdrant-client fastembed flashrank
 !pip install --upgrade gradio
+
+# Optional: if you want to use Ollama with local models
+!pip install -qU langchain-ollama
 ```
 
 ---
@@ -93,7 +96,21 @@ llm = ChatGoogleGenerativeAI(
 )
 ```
 
-**Why this matters:** The LLM is the brain of our system. Gemini 2.0 Flash can handle very long contexts (up to 1M tokens), making it perfect for processing entire documents.
+**Alternative: Using Ollama with Local Models**
+
+If you prefer to use local models with Ollama, you can replace the above code with:
+
+```python
+from langchain_ollama.chat_models import ChatOllama
+
+# Initialize Ollama with your chosen model
+llm = ChatOllama(
+    model="llama3.1:8b",  # or any other model you have installed
+    temperature=0
+)
+```
+
+**Why this matters:** The LLM is the brain of our system. Gemini 2.0 Flash can handle very long contexts (up to 1M tokens), making it perfect for processing entire documents. If you use Ollama, make sure your chosen model supports long contexts and function calling.
 
 ---
 
@@ -422,6 +439,7 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 ✅ **Accurate**: Uses full document context instead of small chunks  
 ✅ **Self-correcting**: Can retry and refine searches  
 ✅ **Scalable**: Hybrid search handles large document collections  
+✅ **Flexible**: Works with both cloud (Gemini) and local models (Ollama)
 
 ---
 
