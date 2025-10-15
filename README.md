@@ -443,6 +443,37 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 
 ---
 
+## 🚧 Upcoming Features
+
+Stay tuned! We're actively working on adding powerful new capabilities:
+
+### 💬 Conversation Memory Management
+The agent will maintain context across multiple questions, understanding references to previous queries.
+
+**Example:**
+```
+User: "How do I install SQL?"
+Agent: [Provides installation instructions]
+
+User: "How do I update it?"
+Agent: [Understands "it" refers to SQL and provides update instructions]
+```
+
+The system will analyze the conversation history and resolve pronouns and implicit references automatically.
+
+### 🔄 Human-in-the-Loop Feedback
+Interactive feedback loop to continuously improve answer quality.
+
+**How it works:**
+1. Agent provides an answer
+2. System asks: "Was this answer helpful?"
+3. If **YES**: Conversation continues normally
+4. If **NO**: Agent re-analyzes the question, tries different retrieval strategies, and generates an improved response
+
+This creates a self-improving system that adapts based on user satisfaction!
+
+---
+
 ## License
 
 MIT License - Feel free to use this for learning and building your own projects!
