@@ -417,10 +417,11 @@ demo.launch(share=False)
 
 ## Usage
 
-1. **Prepare your documents**: Place your documents in the `docs/` folder (in Markdown format)
-2. **Generate summaries**: Create summaries for each document and save them in `summaries/` folder with `_summary.md` suffix
-3. **Run the notebook**: Execute all cells in order
-4. **Chat with your documents**: Use the Gradio interface to ask questions
+1. **Convert PDFs to Markdown:** We recommend using either [Docling](https://github.com/DS4SD/docling) or [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) 
+2. **Prepare your documents**: Place your documents in the `docs/` folder (in Markdown format)
+3. **Generate summaries**: Create summaries for each document and save them in `summaries/` folder with `_summary.md` suffix
+4. **Run the notebook**: Execute all cells in order
+5. **Chat with your documents**: Use the Gradio interface to ask questions
 
 ### Example Interaction
 
