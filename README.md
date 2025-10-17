@@ -13,7 +13,8 @@
   <a href="#how-it-works">How It Works</a> •
   <a href="#installation">Installation</a> •
   <a href="#step-by-step-implementation">Implementation</a> •
-  <a href="#usage">Usage</a>
+  <a href="#usage">Usage</a> •
+  <a href="#upcoming-features">Upcoming Features</a>
 </p>
 
 <p align="center">
@@ -443,7 +444,7 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 
 ---
 
-## 🚧 Upcoming Features
+## Upcoming Features
 
 Stay tuned! We're actively working on adding powerful new capabilities:
 
@@ -470,7 +471,30 @@ Interactive feedback loop to continuously improve answer quality.
 3. If **YES**: Conversation continues normally
 4. If **NO**: Agent re-analyzes the question, tries different retrieval strategies, and generates an improved response
 
-This creates a self-improving system that adapts based on user satisfaction!
+### 🎥 YouTube Video Tutorial
+Comprehensive video guide walking through the entire implementation process.
+
+**What you'll learn:**
+- Step-by-step setup and configuration
+- Understanding the agentic workflow
+
+### 📊 Document Chunking Alternative
+Option to use intelligent document chunking instead of summaries for more granular retrieval.
+
+**How it works:**
+- Documents are split into semantically meaningful chunks
+- Each chunk is embedded and stored separately
+- Agent retrieves relevant chunks instead of full documents
+- Ideal for very large documents or when specific sections are needed
+
+### 📝 PDF to Markdown Conversion
+Seamless integration with [Docling](https://github.com/DS4SD/docling) for automatic PDF processing.
+
+**Features:**
+- Automatic conversion of PDF files to clean Markdown format
+- Preserves document structure, tables, and formatting
+- Handles complex layouts and multi-column documents
+- One-command conversion for entire document folders
 
 ---
 
