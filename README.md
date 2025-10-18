@@ -438,7 +438,7 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 
 If you need guidance on how to transform your PDFs into **Markdown**, check out this companion notebook for a complete walkthrough:
 
-📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/b65f43fc5b6bebf13f1edfe5314b78e5/pdf_to_md.ipynb)**  
+📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/dc8faabf2679f14b933e3c7c6196b24d/pdf_to_md.ipynb)**  
 
 ---
 
