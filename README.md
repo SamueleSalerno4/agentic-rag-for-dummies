@@ -417,7 +417,7 @@ demo.launch(share=False)
 
 ## Usage
 
-1. **Convert PDFs to Markdown:** We recommend using either [Docling](https://github.com/DS4SD/docling) or [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) 
+1. **Convert PDFs to Markdown** 
 2. **Prepare your documents**: Place your documents in the `docs/` folder (in Markdown format)
 3. **Generate summaries**: Create summaries for each document and save them in `summaries/` folder with `_summary.md` suffix
 4. **Run the notebook**: Execute all cells in order
