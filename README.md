@@ -434,6 +434,14 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 
 ---
 
+### Need Help Converting PDFs to Markdown?
+
+If you need guidance on how to transform your PDFs into **Markdown**, check out this companion notebook for a complete walkthrough:
+
+📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/b65f43fc5b6bebf13f1edfe5314b78e5/pdf_to_md.ipynb)**  
+
+---
+
 ## Key Advantages
 
 ✅ **Simple**: Just a few lines of code to build a complete system  
@@ -487,15 +495,6 @@ Option to use intelligent document chunking instead of summaries for more granul
 - Each chunk is embedded and stored separately
 - Agent retrieves relevant chunks instead of full documents
 - Ideal for very large documents or when specific sections are needed
-
-### 📝 PDF to Markdown Conversion
-Seamless integration with [Docling](https://github.com/DS4SD/docling) for automatic PDF processing.
-
-**Features:**
-- Automatic conversion of PDF files to clean Markdown format
-- Preserves document structure, tables, and formatting
-- Handles complex layouts and multi-column documents
-- One-command conversion for entire document folders
 
 ---
 
