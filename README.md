@@ -30,7 +30,7 @@
 
 This repository demonstrates how to build an **Agentic RAG (Retrieval-Augmented Generation)** system using LangGraph with minimal code. Unlike traditional RAG systems that retrieve and respond in a single step, Agentic RAG uses an AI agent that can:
 
-- 🔍 **Intelligently search** through document summaries
+- 🔍 **Intelligently search** through documents
 - 🎯 **Decide which documents** are relevant
 - 📄 **Retrieve full documents** only when needed
 - 🤖 **Leverage long-context LLMs** to generate accurate answers
@@ -438,7 +438,7 @@ Agent: [Searches summaries] → [Finds 2 relevant documents] →
 
 If you need guidance on how to transform your PDFs into **Markdown**, check out this companion notebook for a complete walkthrough:
 
-📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/dc8faabf2679f14b933e3c7c6196b24d/pdf_to_md.ipynb)**  
+📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/fdea06b09b396fe626156e4f38b6e091/pdf_to_md.ipynb)**  
 
 ---
 
