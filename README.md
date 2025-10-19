@@ -24,6 +24,10 @@
   </a>
 </p>
 
+<p align="center">
+  <img alt="Agentic RAG Demo" src="assets/demo.gif" width="500px">
+</p>
+
 ---
 
 ## Overview
