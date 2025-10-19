@@ -19,7 +19,7 @@
 
 <p align="center">
   <strong>Quickstart here 👉</strong> 
-  <a href="https://colab.research.google.com/gist/GiovanniPasq/7124a48c485ffc0aa0cc112acb6932cb/agentic-rag-for-dummies.ipynb">
+  <a href="https://colab.research.google.com/gist/GiovanniPasq/672dcaef823625849c35ae09b6a8b8d7/agentic-rag-for-dummies.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
   </a>
 </p>
@@ -189,7 +189,7 @@ We load pre-generated summaries and index them in our vector database.
 import os
 import glob
 import re
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 summary_documents = []
 
@@ -264,7 +264,7 @@ def retrieve_full_documents(document_ids: List[str]) -> List[str]:
             continue
             
         # Construct path to full document
-        document_path = Path(DOCUMENT_DIR) / f"{doc_id}.md"
+        document_path = Path(DOCUMENT_DIR) / f"{doc_id}"
         
         if document_path.exists():
             with open(document_path, 'r', encoding='utf-8') as f:
