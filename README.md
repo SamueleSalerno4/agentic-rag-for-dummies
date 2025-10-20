@@ -78,7 +78,7 @@ This project is designed to run on **Google Colab**. Install all dependencies wi
 ```bash
 !pip install --quiet --upgrade langgraph
 !pip install -qU "langchain[google-genai]"
-!pip install -qU langchain langchain-community langchain-qdrant langchain-huggingface qdrant-client fastembed flashrank
+!pip install -qU langchain langchain-community langchain-qdrant langchain-huggingface qdrant-client fastembed flashrank langchain-core
 !pip install --upgrade gradio
 
 # Optional: if you want to use Ollama with local models
@@ -95,16 +95,15 @@ First, we set up our language model. We're using Google's Gemini 2.0 Flash for i
 
 ```python
 import os
+import getpass
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # Set your Google API key
-os.environ["GOOGLE_API_KEY"] = "your-api-key-here"
+if not os.environ.get("GOOGLE_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter your Google API key: ")
 
 # Initialize the LLM with zero temperature for consistent outputs
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash-001", 
-    temperature=0
-)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 ```
 
 **Alternative: Using Ollama with Local Models**
@@ -116,7 +115,7 @@ from langchain_ollama.chat_models import ChatOllama
 
 # Initialize Ollama with your chosen model
 llm = ChatOllama(
-    model="llama3.1:8b",  # or any other model you have installed
+    model="qwen3:4b",  # or any other installed model, as long as it supports a context length of at least 256k tokens
     temperature=0
 )
 ```
@@ -145,7 +144,7 @@ SUMMARY_COLLECTION = "document_summaries"
 
 # Initialize embeddings
 dense_embeddings = HuggingFaceEmbeddings(
-    model_name="intfloat/multilingual-e5-large"
+    model_name="sentence-transformers/all-mpnet-base-v2" #"intfloat/multilingual-e5-large"
 )
 sparse_embeddings = FastEmbedSparse(
     model_name="Qdrant/bm25"
@@ -270,8 +269,7 @@ def retrieve_full_documents(document_ids: List[str]) -> List[str]:
             continue
             
         # Construct path to full document
-        document_path = Path(DOCUMENT_DIR) / f"{doc_id}"
-        
+        document_path = Path(DOCUMENT_DIR) / f"{doc_id}{'.md' if not doc_id.endswith('.md') else ''}"        
         if document_path.exists():
             with open(document_path, 'r', encoding='utf-8') as f:
                 content = f.read()
