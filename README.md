@@ -25,6 +25,12 @@
 </p>
 
 <p align="center">
+  <a href="https://www.youtube.com/watch?v=54gWDC3vppA" target="_blank">
+    <img src="https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white" alt="Watch on YouTube">
+  </a>
+</p>
+
+<p align="center">
   <img alt="Agentic RAG Demo" src="assets/demo.gif" width="500px">
 </p>
 
@@ -483,13 +489,6 @@ Interactive feedback loop to continuously improve answer quality.
 2. System asks: "Was this answer helpful?"
 3. If **YES**: Conversation continues normally
 4. If **NO**: Agent re-analyzes the question, tries different retrieval strategies, and generates an improved response
-
-### 🎥 YouTube Video Tutorial
-Comprehensive video guide walking through the entire implementation process.
-
-**What you'll learn:**
-- Step-by-step setup and configuration
-- Understanding the agentic workflow
 
 ### 📊 Document Chunking Alternative
 Option to use intelligent document chunking instead of summaries for more granular retrieval.
