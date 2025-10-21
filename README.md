@@ -12,21 +12,16 @@
   <a href="#overview">Overview</a> •
   <a href="#how-it-works">How It Works</a> •
   <a href="#installation">Installation</a> •
-  <a href="#step-by-step-implementation">Implementation</a> •
+  <a href="#llm-provider-configuration">LLM Providers</a> •
+  <a href="#implementation">Implementation</a> •
   <a href="#usage">Usage</a> •
-  <a href="#upcoming-features">Upcoming Features</a>
+  <a href="#roadmap">Roadmap</a>
 </p>
 
 <p align="center">
   <strong>Quickstart here 👉</strong> 
-  <a href="https://colab.research.google.com/gist/GiovanniPasq/5e52799638f66657c5069a5dd0e292ff/agentic-rag-for-dummies.ipynb">
+  <a href="https://colab.research.google.com/gist/GiovanniPasq/a9bd8e780beaea8cff07e18d09e2f4e4/agentic_rag_for_dummies.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=54gWDC3vppA" target="_blank">
-    <img src="https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white" alt="Watch on YouTube">
   </a>
 </p>
 
@@ -36,145 +31,277 @@
 
 ---
 
+## Why This Repo?
+
+While many RAG examples exist, most are simple pipelines that force a trade-off: use small chunks for search precision *or* large chunks for answer context. They lack the intelligence to adapt.
+
+This repository was created to fill that gap, providing a production-ready **Agentic RAG** system that's both powerful and easy to understand. It implements a **Hierarchical (Parent/Child) indexing strategy**, letting you search small, precise chunks and *then* retrieve the full parent context for high-quality answers.
+
+By leveraging **LangGraph**, it creates a true agent that can reason, evaluate its search results, and *decide* if it needs more context or should self-correct. It’s built to be **provider-agnostic**, allowing you to develop privately with Ollama and switch to production LLMs like Google Gemini or OpenAI by changing just one line of code.
+
+---
+
 ## Overview
 
-This repository demonstrates how to build an **Agentic RAG (Retrieval-Augmented Generation)** system using LangGraph with minimal code. Unlike traditional RAG systems that retrieve and respond in a single step, Agentic RAG uses an AI agent that can:
+This repository demonstrates how to build an **Agentic RAG (Retrieval-Augmented Generation)** system using LangGraph with minimal code. Unlike traditional RAG systems that struggle with finding the optimal chunk size, this project implements a **Hierarchical Indexing (Parent/Child) strategy** that:
 
-- 🔍 **Intelligently search** through documents
-- 🎯 **Decide which documents** are relevant
-- 📄 **Retrieve full documents** only when needed
-- 🤖 **Leverage long-context LLMs** to generate accurate answers
-- 🔄 **Self-correct** and retry if the answer isn't satisfactory
+- 🔍 **Searches small, specific chunks** (Child Chunks) for high-precision retrieval
+- 🧠 **Evaluates relevance** at the granular chunk level
+- 📄 **Fetches larger Parent Chunks** (surrounding context) only when needed
+- 🤖 **Uses an agent** (via LangGraph) to orchestrate the workflow intelligently
+- 🔄 **Self-corrects** and re-queries if initial results are insufficient
 
-### The Approach
-
-Instead of chunking documents and retrieving small pieces, we:
-
-1. **Generate summaries** for each document (PDF)
-2. **Store summaries** in a vector database with hybrid search (dense + sparse)
-3. **Let the agent** search summaries first to find relevant documents
-4. **Retrieve full documents** and leverage the LLM's long context window
-5. **Generate accurate answers** using complete document context
-
-This approach reduces hallucinations and improves answer quality by giving the LLM full context rather than fragmented chunks.
+This approach combines the **precision of small chunks** with the **contextual richness of large chunks**, leading to more accurate and comprehensive LLM responses.
 
 ---
 
 ## How It Works
 
+The core innovation is the **Parent/Child document strategy**:
+
 ```
-User Query → Agent → Search Summaries → Evaluate Relevance → 
-Retrieve Full Documents → Generate Answer → Verify Quality → Return Response
+User Query → Agent → Search Child Chunks → Evaluate Relevance →
+(If needed) → Retrieve Parent Chunks → Generate Answer → Return Response
 ```
 
-The agent orchestrates the entire retrieval process, making intelligent decisions about which documents to fetch and when to retry.
+### The Three-Stage Process
+
+**Stage 1: Hierarchical Indexing**
+
+Documents are split twice:
+- **Parent Chunks**: Large sections based on Markdown headers (H1, H2, H3)
+- **Child Chunks**: Small, fixed-size pieces (500 chars) derived from parents
+
+**Stage 2: Dual Storage**
+
+- **Child Chunks** → Qdrant vector database (with hybrid dense + sparse embeddings)
+- **Parent Chunks** → JSON file store (retrieved by ID)
+
+**Stage 3: Intelligent Retrieval**
+
+1. Agent searches child chunks for precision
+2. Evaluates if results are sufficient
+3. Fetches parent chunks for context if needed
+4. Generates answer from complete information
 
 ---
 
 ## Installation
 
-This project is designed to run on **Google Colab**. Install all dependencies with:
+### Prerequisites
+
+**Step 1: Install Python dependencies**
 
 ```bash
-!pip install --quiet --upgrade langgraph
-!pip install -qU "langchain[google-genai]"
-!pip install -qU langchain langchain-community langchain-qdrant langchain-huggingface qdrant-client fastembed flashrank langchain-core
-!pip install --upgrade gradio
-
-# Optional: if you want to use Ollama with local models
-!pip install -qU langchain-ollama
+pip install --upgrade gradio
+pip install -qU langgraph langchain-huggingface
+pip install -qU langchain-qdrant qdrant-client fastembed
+pip install -qU langchain-text-splitters
 ```
+
+**Step 2: Choose and install your LLM provider** (see next section)
 
 ---
 
-## Step-by-Step Implementation
+## LLM Provider Configuration
 
-### Step 1: Configure the LLM
+This system is **provider-agnostic** - you can use any LLM supported by LangChain. Choose the option that best fits your needs:
 
-First, we set up our language model. We're using Google's Gemini 2.0 Flash for its excellent long-context capabilities.
+### Option 1: Ollama (Local - Recommended for Development)
 
-```python
-import os
-import getpass
-from langchain_google_genai import ChatGoogleGenerativeAI
+**Install Ollama and download the model:**
 
-# Set your Google API key
-if not os.environ.get("GOOGLE_API_KEY"):
-    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter your Google API key: ")
-
-# Initialize the LLM with zero temperature for consistent outputs
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+```bash
+# Install Ollama from https://ollama.com
+ollama pull qwen3:4b-instruct
 ```
 
-**Alternative: Using Ollama with Local Models**
-
-If you prefer to use local models with Ollama, you can replace the above code with:
+**Python code:**
 
 ```python
-from langchain_ollama.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 
-# Initialize Ollama with your chosen model
 llm = ChatOllama(
-    model="qwen3:4b",  # or any other installed model, as long as it supports a context length of at least 256k tokens
+    model="qwen3:4b-instruct",
     temperature=0
 )
 ```
 
-**Why this matters:** The LLM is the brain of our system. Gemini 2.0 Flash can handle very long contexts (up to 1M tokens), making it perfect for processing entire documents. If you use Ollama, make sure your chosen model supports long contexts and function calling.
+---
+
+### Option 2: Google Gemini (Cloud - Recommended for Production)
+
+**Install the package:**
+
+```bash
+pip install -qU langchain-google-genai
+```
+
+**Python code:**
+
+```python
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+# Set your Google API key
+os.environ["GOOGLE_API_KEY"] = "your-api-key-here"
+
+# Initialize the LLM with zero temperature for consistent outputs
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash-exp",
+    temperature=0
+)
+```
 
 ---
 
-### Step 2: Set Up Vector Database with Hybrid Search
+### Option 3: OpenAI (Cloud)
 
-We use Qdrant for vector storage with hybrid search (combining semantic and keyword-based retrieval).
+**Install the package:**
+
+```bash
+pip install -qU langchain-openai
+```
+
+**Python code:**
 
 ```python
-from qdrant_client import QdrantClient
-from qdrant_client.http import models as qmodels
+import os
+from langchain_openai import ChatOpenAI
+
+# Set your OpenAI API key
+os.environ["OPENAI_API_KEY"] = "your-api-key-here"
+
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0
+)
+```
+
+---
+
+### Option 4: Anthropic Claude (Cloud)
+
+**Install the package:**
+
+```bash
+pip install -qU langchain-anthropic
+```
+
+**Python code:**
+
+```python
+import os
+from langchain_anthropic import ChatAnthropic
+
+# Set your Anthropic API key
+os.environ["ANTHROPIC_API_KEY"] = "your-api-key-here"
+
+llm = ChatAnthropic(
+    model="claude-3-5-sonnet-20241022",
+    temperature=0
+)
+```
+
+---
+
+### Important Notes
+
+- **Temperature 0** is used throughout for consistent, deterministic outputs
+- **All providers** work with the exact same code - only the LLM initialization changes
+- **API keys** should be stored securely using environment variables or secret management services
+- **Cost considerations:** Cloud providers charge per token, while Ollama is free but requires local compute resources
+
+**💡 Recommendation:** Start with Ollama for development and testing, then switch to Google Gemini or OpenAI for production if you need faster responses or don't want to manage local infrastructure.
+
+---
+
+## Implementation
+
+### Step 1: Initial Setup and Configuration
+
+Define paths and initialize core components.
+
+```python
+import os
+from pathlib import Path
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant.fastembed_sparse import FastEmbedSparse
-from langchain_qdrant import QdrantVectorStore
-from langchain_qdrant.qdrant import RetrievalMode
+from qdrant_client import QdrantClient
 
 # Configuration
-DOCUMENT_DIR = "docs"
-SUMMARY_DIR = "summaries"
-DB_PATH = "qdrant_db"
-SUMMARY_COLLECTION = "document_summaries"
+DOCS_DIR = "docs"  # Directory containing your .md files
+PARENT_STORE_PATH = "parent_store"  # Directory for parent chunk JSON files
+CHILD_COLLECTION = "document_child_chunks"
 
-# Initialize embeddings
+# Create directories if they don't exist
+os.makedirs(DOCS_DIR, exist_ok=True)
+os.makedirs(PARENT_STORE_PATH, exist_ok=True)
+
+# Initialize LLM (choose one from the previous section)
+# Example with Ollama:
+from langchain_ollama import ChatOllama
+llm = ChatOllama(model="qwen3:4b-instruct", temperature=0)
+
+# Or with Google Gemini:
+# from langchain_google_genai import ChatGoogleGenerativeAI
+# os.environ["GOOGLE_API_KEY"] = "your-api-key-here"
+# llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+
+# Dense embeddings for semantic understanding
 dense_embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-mpnet-base-v2" #"intfloat/multilingual-e5-large"
+    model_name="sentence-transformers/all-mpnet-base-v2"
 )
+
+# Sparse embeddings for keyword matching
 sparse_embeddings = FastEmbedSparse(
     model_name="Qdrant/bm25"
 )
 
-# Create Qdrant client
-client = QdrantClient(path=DB_PATH)
+# Qdrant client (local file-based storage)
+client = QdrantClient(path="qdrant_db")
+```
+
+**Why hybrid embeddings?** Combining semantic understanding (`all-mpnet-base-v2`) with keyword matching (`bm25`) ensures we capture both meaning and specific terms.
+
+---
+
+### Step 2: Configure Vector Database
+
+Set up Qdrant to store child chunks with hybrid search capabilities.
+
+```python
+from qdrant_client.http import models as qmodels
+from langchain_qdrant import QdrantVectorStore
+from langchain_qdrant.qdrant import RetrievalMode
+
+# Get embedding dimension
 embedding_dimension = len(dense_embeddings.embed_query("test"))
 
 def ensure_collection(collection_name):
-    """Create collection if it doesn't exist"""
+    """Create Qdrant collection if it doesn't exist"""
     if not client.collection_exists(collection_name):
         client.create_collection(
             collection_name=collection_name,
             vectors_config=qmodels.VectorParams(
-                size=embedding_dimension, 
+                size=embedding_dimension,
                 distance=qmodels.Distance.COSINE
             ),
             sparse_vectors_config={
                 "sparse": qmodels.SparseVectorParams()
             },
         )
+        print(f"✓ Created collection: {collection_name}")
+    else:
+        print(f"✓ Collection already exists: {collection_name}")
 
-# Create collections
-ensure_collection(SUMMARY_COLLECTION)
+# Create collection
+ensure_collection(CHILD_COLLECTION)
 
-# Initialize vector stores
-summary_vector_store = QdrantVectorStore(
+# Initialize vector store for child chunks
+child_vector_store = QdrantVectorStore(
     client=client,
-    collection_name=SUMMARY_COLLECTION,
+    collection_name=CHILD_COLLECTION,
     embedding=dense_embeddings,
     sparse_embedding=sparse_embeddings,
     retrieval_mode=RetrievalMode.HYBRID,
@@ -182,320 +309,411 @@ summary_vector_store = QdrantVectorStore(
 )
 ```
 
-**Why hybrid search?** Dense embeddings capture semantic meaning, while sparse embeddings (BM25) capture exact keyword matches. Together, they provide more robust retrieval.
-
 ---
 
-### Step 3: Load Document Summaries
+### Step 3: Hierarchical Document Indexing
 
-We load pre-generated summaries and index them in our vector database.
+Process documents with the Parent/Child splitting strategy.
 
 ```python
-import os
 import glob
-import re
+import json
 from langchain_core.documents import Document
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter
+)
 
-summary_documents = []
-
-# Load all summary files
-for file_path in sorted(glob.glob(os.path.join(SUMMARY_DIR, "*_summary.md"))):
-    base_name = os.path.basename(file_path)
-    # Extract document ID from filename
-    document_id = re.sub(r"_summary\.md$", "", base_name, flags=re.I).lower()
+def index_documents():
+    """Index documents using hierarchical Parent/Child strategy"""
+    print("\n" + "="*50)
+    print("Starting Hierarchical Indexing")
+    print("="*50 + "\n")
     
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    
-    summary_documents.append(
-        Document(
-            page_content=content,
-            metadata={"document_id": document_id, "source": base_name}
-        )
+    # Parent splitter: by Markdown headers
+    headers_to_split_on = [
+        ("#", "H1"),
+        ("##", "H2"),
+        ("###", "H3")
+    ]
+    parent_splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=headers_to_split_on,
+        strip_headers=False
     )
+    
+    # Child splitter: by character count
+    child_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=100
+    )
+    
+    all_child_chunks = []
+    all_parent_pairs = []
+    
+    # Check if docs directory has files
+    md_files = sorted(glob.glob(os.path.join(DOCS_DIR, "*.md")))
+    if not md_files:
+        print(f"⚠️  No .md files found in {DOCS_DIR}/")
+        print("Please add your Markdown documents to continue.")
+        return
+    
+    # Process each document
+    for doc_path_str in md_files:
+        doc_path = Path(doc_path_str)
+        print(f"📄 Processing: {doc_path.name}")
+        
+        try:
+            with open(doc_path, "r", encoding="utf-8") as f:
+                md_text = f.read()
+        except Exception as e:
+            print(f"❌ Error reading {doc_path.name}: {e}")
+            continue
+        
+        # Split into parent chunks
+        parent_chunks = parent_splitter.split_text(md_text)
+        
+        for i, p_chunk in enumerate(parent_chunks):
+            # Add metadata
+            p_chunk.metadata["source"] = str(doc_path)
+            parent_id = f"{doc_path.stem}_parent_{i}"
+            p_chunk.metadata["parent_id"] = parent_id
+            
+            # Store parent reference
+            all_parent_pairs.append((parent_id, p_chunk))
+            
+            # Split into child chunks
+            child_chunks = child_splitter.split_documents([p_chunk])
+            all_child_chunks.extend(child_chunks)
+    
+    # Save child chunks to Qdrant
+    if all_child_chunks:
+        print(f"\n🔍 Indexing {len(all_child_chunks)} child chunks into Qdrant...")
+        try:
+            child_vector_store.add_documents(all_child_chunks)
+            print("✓ Child chunks indexed successfully")
+        except Exception as e:
+            print(f"❌ Error indexing child chunks: {e}")
+            return
+    else:
+        print("⚠️  No child chunks to index")
+        return
+    
+    # Save parent chunks to JSON files
+    if all_parent_pairs:
+        print(f"💾 Saving {len(all_parent_pairs)} parent chunks to JSON...")
+        
+        # Clear existing parent files
+        for item in os.listdir(PARENT_STORE_PATH):
+            os.remove(os.path.join(PARENT_STORE_PATH, item))
+        
+        # Save each parent chunk
+        for parent_id, doc in all_parent_pairs:
+            doc_dict = {
+                "page_content": doc.page_content,
+                "metadata": doc.metadata
+            }
+            file_path = os.path.join(PARENT_STORE_PATH, f"{parent_id}.json")
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(doc_dict, f, ensure_ascii=False, indent=2)
+        
+        print("✓ Parent chunks saved successfully")
+    
+    print("\n" + "="*50)
+    print("✓ Indexing Complete!")
+    print("="*50 + "\n")
 
-# Index summaries in vector database
-_ = summary_vector_store.add_documents(summary_documents)
+# Run indexing
+index_documents()
 ```
 
-**Why summaries?** Summaries are concise and faster to search. The agent uses them as a "table of contents" to quickly identify relevant documents.
+**Why this approach?** Small chunks provide precision for searching, while parent chunks offer complete context when needed. This eliminates the traditional RAG dilemma of choosing between precision and context.
 
 ---
 
 ### Step 4: Define Agent Tools
 
-The agent needs tools to interact with the retrieval system.
+Create the two tools the agent will use to retrieve information.
 
 ```python
 from typing import List
-from pathlib import Path
 
-def search_summaries(query: str, k: int = 3) -> List[dict]:
+def search_child_chunks(query: str, k: int = 5) -> List[dict]:
     """
-    Search for the top K most relevant document summaries.
+    Search for the top K most relevant child chunks.
     
     Args:
-        query: The search query
+        query: Search query string
         k: Number of results to return
-        
+    
     Returns:
-        List of relevant summary documents with their metadata
+        List of dicts with content, parent_id, and source
     """
-    results = summary_vector_store.similarity_search(query, k=k)
-    # Convert to dict format that can be passed between tools
-    return [
-        {
-            "content": doc.page_content,
-            "document_id": doc.metadata.get("document_id", ""),
-            "source": doc.metadata.get("source", "")
-        }
-        for doc in results
-    ]
+    try:
+        results = child_vector_store.similarity_search(query, k=k)
+        return [
+            {
+                "content": doc.page_content,
+                "parent_id": doc.metadata.get("parent_id", ""),
+                "source": doc.metadata.get("source", "")
+            }
+            for doc in results
+        ]
+    except Exception as e:
+        print(f"Error searching child chunks: {e}")
+        return []
 
-def retrieve_full_documents(document_ids: List[str]) -> List[str]:
+def retrieve_parent_chunks(parent_ids: List[str]) -> List[dict]:
     """
-    Retrieve complete documents based on document IDs.
+    Retrieve full parent chunks by their IDs.
     
     Args:
-        document_ids: List of document IDs to retrieve
-        
+        parent_ids: List of parent chunk IDs to retrieve
+    
     Returns:
-        List of full document contents
+        List of dicts with content, parent_id, and metadata
     """
-    full_documents = []
+    unique_ids = sorted(list(set(parent_ids)))
+    results = []
     
-    for doc_id in document_ids:
-        if not doc_id:
-            continue
-            
-        # Construct path to full document
-        document_path = Path(DOCUMENT_DIR) / f"{doc_id}{'.md' if not doc_id.endswith('.md') else ''}"        
-        if document_path.exists():
-            with open(document_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                full_documents.append(content)
+    for parent_id in unique_ids:
+        file_path = os.path.join(PARENT_STORE_PATH, f"{parent_id}.json")
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    doc_dict = json.load(f)
+                    results.append({
+                        "content": doc_dict["page_content"],
+                        "parent_id": parent_id,
+                        "metadata": doc_dict["metadata"]
+                    })
+            except Exception as e:
+                print(f"Error loading parent chunk {parent_id}: {e}")
     
-    return full_documents
+    return results
 
 # Bind tools to LLM
-llm_with_tools = llm.bind_tools([search_summaries, retrieve_full_documents])
+llm_with_tools = llm.bind_tools([search_child_chunks, retrieve_parent_chunks])
 ```
 
-**Why two separate tools?** This gives the agent fine-grained control. It can search summaries first, evaluate them, and only retrieve full documents if needed.
+**Why separate tools?** This gives the agent fine-grained control. It can search first, evaluate results, then decide whether to fetch more context.
 
 ---
 
-### Step 5: Create the Agent System Prompt
+### Step 5: Define Agent System Prompt
 
-The system prompt defines the agent's behavior and reasoning process.
+Create the prompt that guides the agent's reasoning process.
 
 ```python
 from langchain_core.messages import SystemMessage
 
-SYSTEM_PROMPT = """You are an intelligent document retrieval assistant specialized in answering questions accurately using available documents.
+SYSTEM_PROMPT = """You are an intelligent assistant specialized in answering questions using documents.
 
-Your task follows this precise workflow:
+Follow this precise workflow:
 
-1. **Analyze the question**: 
-   - Understand what the user is asking
-   - Identify the main topic and any sub-topics
+**1. Analyze the Question**
+- Understand what the user is asking
+- Identify main topics
+- If complex, split into focused subqueries
+- Process each subquery through steps 2-7
 
-2. **Rewrite and split if necessary**: 
-   - Rephrase the question if it's unclear
-   - If the question covers multiple different topics, split it into sub-queries
-   - Each sub-query should address a single, specific topic
+**2. Retrieve Child Chunks**
+- Use `search_child_chunks` to find relevant small chunks
+- Choose appropriate K value (default: 5)
 
-3. **Retrieve top X summary documents**: 
-   - Decide how many summary documents to retrieve (the X value is your choice based on query complexity)
-   - Use the search_summaries tool for each sub-query
-   - Evaluate each retrieved summary to determine if it's relevant to the question
-   - Discard irrelevant summaries
+**3. Evaluate Child Chunks**
+- Read retrieved content carefully
+- Determine relevance to the question
+- Identify `parent_id`s of most relevant chunks
+- If chunks contain ALL needed information, skip to step 6
 
-4. **Return exact document names**: 
-   - From the relevant summaries, extract the exact document_id with extension
-   - List which documents you're going to retrieve
+**4. Assess Need for Context**
+- If chunks are fragmented, unclear, or incomplete
+- If they only partially answer the question
+- Then retrieve parent chunks
 
-5. **Retrieve complete documents and provide answer**: 
-   - Use the retrieve_full_documents tool with the document_ids
-   - Read the full documents to find the answer
+**5. Retrieve Parent Chunks (if needed)**
+- Use `retrieve_parent_chunks` with unique `parent_id`s
+- Read parent chunks for full context
 
-6. **Verify document relevance**: 
-   - Check if each complete document is actually pertinent to the question
-   - Discard documents that are not relevant
-   - **If NONE of the documents are relevant, GO BACK TO STEP 1 and try again with different search terms**
+**6. Generate Answer**
+- Base answer exclusively on retrieved information
+- Combine subquery answers if applicable
+- Explain concepts clearly
+- Cite source files (without extension) using metadata
+- Example: "This information comes from '[filename]'"
 
-7. **Provide clear and detailed answer**: 
-   - Give a comprehensive response based on the documents
-   - Explain concepts clearly, assuming the user has no prior knowledge of the topic
-   - Use simple language and avoid jargon when possible
+**7. Verify and Iterate**
+- If initial search found nothing relevant: rephrase query and retry
+- If parent chunks insufficient: restart from step 1
+- Maximum 3 attempts per question/subquery
+- After 3 attempts, ask user to rephrase
 
-8. **Verify answer completeness**: 
-   - Check that your complete answer is relevant and fully addresses the question
-   - Ensure all sub-queries (if any) have been answered
-
-9. **If answer is not satisfactory**: 
-   - **GO BACK TO STEP 1** and start the process again with a different approach
-
-10. **Loop limit**: 
-    - **Repeat this entire loop a MAXIMUM of 3 times**
-    - After 3 complete attempts, if you're still not confident in your answer, politely ask the user to rephrase their question more clearly
-
-**Critical rules**:
-- You MUST follow steps 1-10 in order
-- You MUST go back to step 1 if documents are not relevant (step 6) or answer is not satisfactory (step 9)
-- You MUST NOT exceed 3 complete loops through the entire process
-- Always base your answers strictly on the retrieved documents
-- Never make up information that isn't in the documents
+**Critical Rules:**
+- Follow steps 1-7 for every question/subquery
+- Answer only from retrieved chunks
+- Never fabricate information
+- Always cite sources
 """
 
 system_message = SystemMessage(content=SYSTEM_PROMPT)
 ```
 
-**Why this prompt?** It gives the agent a clear decision-making framework, encouraging it to think step-by-step and self-correct when needed.
+**Why this structure?** The explicit workflow forces the agent to evaluate small chunks before fetching larger ones, preventing unnecessary context bloat and keeping responses focused.
 
 ---
 
 ### Step 6: Build the LangGraph Agent
 
-Now we create the agent graph that orchestrates the retrieval flow.
+Create the agent's execution graph with proper state management.
 
 ```python
-from langchain_core.messages import HumanMessage
 from langgraph.graph import MessagesState, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_core.messages import HumanMessage
 
-# Define the agent's decision-making node
 def agent_node(state: MessagesState):
-    """Agent decides which tool to call or generates final response"""
-    return {
-        "messages": llm_with_tools.invoke(
-            [system_message] + state["messages"]
-        )
-    }
+    """
+    Agent decision-making node.
+    Decides which tool to call or generates final response.
+    """
+    messages = [system_message] + state["messages"]
+    response = llm_with_tools.invoke(messages)
+    return {"messages": [response]}
 
-# Build the graph
+# Build the execution graph
 graph_builder = StateGraph(MessagesState)
 
 # Add nodes
 graph_builder.add_node("agent", agent_node)
-graph_builder.add_node("tools", ToolNode([search_summaries, retrieve_full_documents]))
+graph_builder.add_node(
+    "tools",
+    ToolNode([search_child_chunks, retrieve_parent_chunks])
+)
 
 # Define edges
 graph_builder.add_edge(START, "agent")
 graph_builder.add_conditional_edges(
     "agent",
-    tools_condition,  # Decides if tools are needed or if we should end
+    tools_condition,  # Routes to tools or END
 )
-graph_builder.add_edge("tools", "agent")  # After tool use, return to agent
+graph_builder.add_edge("tools", "agent")
 
 # Compile the graph
 agent_graph = graph_builder.compile()
 
-# Visualize the graph (optional)
-from IPython.display import Image, display
-display(Image(agent_graph.get_graph(xray=True).draw_mermaid_png()))
+print("✓ Agent graph compiled successfully")
 ```
 
-**What's happening here?** The agent evaluates the user's message, decides if it needs to call tools, processes the tool results, and generates a final answer. This loop continues until the agent is satisfied.
+**Flow explanation:**
+1. Query enters at START → agent
+2. Agent decides: call tool or generate answer
+3. If tool needed → tools node executes → returns to agent
+4. Agent evaluates → repeats or generates final answer
+5. Loop continues until answer is complete
 
 ---
 
-### Step 7: Create a Chat Interface
+### Step 7: Create Chat Interface
 
-Finally, we wrap everything in a simple Gradio interface.
+Build a simple Gradio interface for interaction.
 
 ```python
 import gradio as gr
 
 def chat_with_agent(message, history):
-    """Process user message and return agent's response"""
-    result = agent_graph.invoke({
-        "messages": [HumanMessage(content=message)]
-    })
-    return result["messages"][-1].content
+    """
+    Process user message through the agent graph.
+    
+    Args:
+        message: User's question
+        history: Chat history (unused in current implementation)
+    
+    Returns:
+        Agent's response as string
+    """
+    try:
+        result = agent_graph.invoke({
+            "messages": [HumanMessage(content=message)]
+        })
+        return result["messages"][-1].content
+    except Exception as e:
+        return f"❌ Error: {str(e)}\n\nPlease try rephrasing your question."
 
-# Launch Gradio interface
-demo = gr.ChatInterface(fn=chat_with_agent)
+# Create and launch interface
+demo = gr.ChatInterface(
+    fn=chat_with_agent,
+    title="🤖 Agentic RAG Assistant",
+    description="Ask questions about your documents. The agent will intelligently retrieve and combine information."
+)
+
+print("\n🚀 Launching chat interface...")
 demo.launch(share=False)
 ```
 
-**And you're done!** You now have a fully functional Agentic RAG system that intelligently searches through documents and generates accurate answers.
+**You're done!** You now have a fully functional Agentic RAG system.
 
 ---
 
 ## Usage
 
-1. **Convert PDFs to Markdown** 
-2. **Prepare your documents**: Place your documents in the `docs/` folder (in Markdown format)
-3. **Generate summaries**: Create summaries for each document and save them in `summaries/` folder with `_summary.md` suffix
-4. **Run the notebook**: Execute all cells in order
-5. **Chat with your documents**: Use the Gradio interface to ask questions
+### Quick Start
 
-### Example Interaction
+**1. Prepare your documents**
 
-```
-User: "What are the best practices for data security?"
+```bash
+# Create docs directory
+mkdir docs
 
-Agent: [Searches summaries] → [Finds 2 relevant documents] → 
-       [Retrieves full documents] → [Generates comprehensive answer]
+# Add your Markdown files
+cp your_documents/*.md docs/
 ```
 
+**2. Run the system**
+
+```bash
+# If using a Python script
+python agentic_rag.py
+
+# If using Jupyter notebook
+jupyter notebook agentic_rag.ipynb
+```
+
+**3. Ask questions**
+
+The Gradio interface will open in your browser. Start asking questions about your documents!
+
+### Converting PDFs to Markdown
+
+Need to convert PDFs? Use this companion notebook:
+
+📘 **[PDF to Markdown Converter](https://colab.research.google.com/gist/GiovanniPasq/fdea06b09b396fe626156e4f38b6e091/pdf_to_md.ipynb)**
+
 ---
 
-### Need Help Converting PDFs to Markdown?
+## Roadmap
 
-If you need guidance on how to transform your PDFs into **Markdown**, check out this companion notebook for a complete walkthrough:
+### 🔜 Coming Soon
 
-📘 **[PDF to Markdown Conversion Notebook](https://colab.research.google.com/gist/GiovanniPasq/fdea06b09b396fe626156e4f38b6e091/pdf_to_md.ipynb)**  
+**💬 Conversation Memory**
 
----
+Maintain context across multiple questions for natural dialogue.
 
-## Key Advantages
-
-✅ **Simple**: Just a few lines of code to build a complete system  
-✅ **Intelligent**: Agent makes smart decisions about retrieval  
-✅ **Accurate**: Uses full document context instead of small chunks  
-✅ **Self-correcting**: Can retry and refine searches  
-✅ **Scalable**: Hybrid search handles large document collections  
-✅ **Flexible**: Works with both cloud (Gemini) and local models (Ollama)
-
----
-
-## Upcoming Features
-
-Stay tuned! We're actively working on adding powerful new capabilities:
-
-### 💬 Conversation Memory Management
-The agent will maintain context across multiple questions, understanding references to previous queries.
-
-**Example:**
 ```
 User: "How do I install SQL?"
-Agent: [Provides installation instructions]
+Agent: [Installation steps]
 
 User: "How do I update it?"
-Agent: [Understands "it" refers to SQL and provides update instructions]
+Agent: [Understands "it" = SQL, provides update steps]
 ```
 
-The system will analyze the conversation history and resolve pronouns and implicit references automatically.
+**🔄 Human-in-the-Loop Feedback**
 
-### 🔄 Human-in-the-Loop Feedback
-Interactive feedback loop to continuously improve answer quality.
+Iterative improvement through user feedback.
 
-**How it works:**
-1. Agent provides an answer
-2. System asks: "Was this answer helpful?"
-3. If **YES**: Conversation continues normally
-4. If **NO**: Agent re-analyzes the question, tries different retrieval strategies, and generates an improved response
-
-### 📊 Document Chunking Alternative
-Option to use intelligent document chunking instead of summaries for more granular retrieval.
-
-**How it works:**
-- Documents are split into semantically meaningful chunks
-- Each chunk is embedded and stored separately
-- Agent retrieves relevant chunks instead of full documents
-- Ideal for very large documents or when specific sections are needed
+1. Agent generates answer
+2. User rates: helpful or not
+3. If not helpful → agent retries with different strategy
+4. Learn from feedback to improve over time
 
 ---
 
