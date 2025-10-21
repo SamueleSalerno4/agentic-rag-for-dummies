@@ -656,31 +656,59 @@ demo.launch(share=False)
 
 ## Usage
 
-### Quick Start
+You have two ways to run this project. Choose the one that fits your needs.
 
-**1. Prepare your documents**
+### Option 1: Quickstart Notebook (Recommended for testing)
+
+The easiest way to get started is by using the all-in-one **Jupyter/Colab Notebook**.
+
+1. Click the **Open in Colab** badge at the top of this README.
+2. Once in Colab, create a `docs/` folder in the file browser.
+3. Upload your own `.md` files to the new `docs/` folder.
+4. Run all the cells in the notebook from top to bottom. The chat interface will appear at the end.
+
+### Option 2: Full Python Project (Recommended for development)
+
+#### 1. Install Dependencies
+First, ensure you have all the required packages. It's highly recommended to use a virtual environment.
 
 ```bash
-# Create docs directory
-mkdir docs
+# Create a virtual environment (optional but recommended)
+python -m venv venv
 
-# Add your Markdown files
-cp your_documents/*.md docs/
+# Activate it (choose one):
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+.\venv\Scripts\activate
+
+# Install required packages from the file
+pip install -r requirements.txt
 ```
 
-**2. Run the system**
+#### 2. Add Your Documents
+Place your `.md` files into the `docs/` directory. Example files are already included so you can run the project immediately.
+
+#### 3. Index Your Documents
+Before running the app, you must process and index your documents. Run the indexing script from your terminal:
 
 ```bash
-# If using a Python script
-python agentic_rag.py
-
-# If using Jupyter notebook
-jupyter notebook agentic_rag.ipynb
+python indexing.py
 ```
 
-**3. Ask questions**
+This will read all files from `docs/`, split them, and populate the Qdrant database and the `parent_store/`.
 
-The Gradio interface will open in your browser. Start asking questions about your documents!
+#### 4. Run the Application
+Once indexing is complete, start the Gradio web interface:
+
+```bash
+python app.py
+```
+
+#### 5. Ask Questions
+
+Open the local URL (e.g., ```http://127.0.0.1:7860```) printed in your terminal to start chatting.
+
 
 ### Converting PDFs to Markdown
 
