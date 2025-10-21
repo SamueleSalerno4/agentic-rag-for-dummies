@@ -1,8 +1,0 @@
-title:
-Blockchain for beginners- basic guiding principles
-
-abstract:
-This guide, published in April 2024 by the EU Blockchain Observatory and Forum, provides an introductory understanding of blockchain technology for novice learners. Authored by Marianna Charalambous and Tonia Damvakeraki, the document begins with an A-Z glossary defining key terminology (such as Bitcoin, DeFi, NFT, PoW, and MiCA). It then covers the definition, historical background, and key advantages of blockchain. The guide details the fundamental principles, including **decentralization**, **cryptography** (like hash functions), and **consensus mechanisms**, contrasting blockchain with traditional databases. It explores different types of blockchains: **public vs. private**, **permissionless vs. permissioned**, consortium, and hybrid. The document also examines diverse **use cases**, including finance (cryptocurrency), supply chain management, healthcare, governance, and intellectual property. Finally, it discusses emerging topics like **NFTs**, **DeFi**, virtual worlds (Metaverse), **CBDCs**, interoperability, and environmental concerns, concluding with an overview of the **regulatory landscape** in Europe (MiCA), the US, and Asia. The authors note the guide is a snapshot of a rapidly evolving field.
-
-keywords:
-Blockchain, Beginners, Introduction, EU Blockchain Observatory and Forum, Decentralization, Cryptography, Consensus Mechanisms, PoW, Public Blockchain, Private Blockchain, Permissioned, Permissionless, Use Cases, Cryptocurrency, Bitcoin, NFTs, DeFi, Metaverse, Virtual Worlds, CBDCs, Regulation, MiCA, Glossary, Ledger, European Commission.
