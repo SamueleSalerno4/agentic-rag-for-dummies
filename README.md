@@ -30,7 +30,7 @@
 </p>
 
 <p align="center">
-  <strong>If you find this project useful, please leave a star ⭐️ It would be greatly appreciated!</strong>
+  <strong>If you like this project, a star ⭐️ would mean a lot :)</strong>
 </p>
 
 ---
