@@ -29,6 +29,10 @@
   <img alt="Agentic RAG Demo" src="assets/demo.gif" width="500px">
 </p>
 
+<p align="center">
+  <strong>Enjoying this project? Give it a star ⭐️ — it really helps!</strong>
+</p>
+
 ---
 
 ## Why This Repo?
