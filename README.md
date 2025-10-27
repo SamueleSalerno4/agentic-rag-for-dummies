@@ -30,6 +30,10 @@
 </p>
 
 <p align="center">
+  <strong>🎉 NEW: Upcoming features releasing this week! <a href="#roadmap">Check the roadmap →</a></strong>
+</p>
+
+<p align="center">
   <strong>If you like this project, a star ⭐️ would mean a lot :)</strong>
 </p>
 
@@ -724,6 +728,14 @@ Need to convert PDFs? Use this companion notebook:
 
 ## Roadmap
 
+### 🎉 Releasing This Week!
+
+**New features coming by the end of this week - stay tuned!**
+
+<p align="center">
+  <img alt="Upcoming Features Preview" src="assets/newDemo.gif" width="700px">
+</p>
+
 ### 🔜 Coming Soon
 
 **💬 Conversation Memory**
@@ -738,14 +750,15 @@ User: "How do I update it?"
 Agent: [Understands "it" = SQL, provides update steps]
 ```
 
-**🔄 Human-in-the-Loop Feedback**
+**🔄 Human-in-the-Loop Query Clarification**
 
-Iterative improvement through user feedback.
+Ensures questions are clear before retrieving information.
 
-1. Agent generates answer
-2. User rates: helpful or not
-3. If not helpful → agent retries with different strategy
-4. Learn from feedback to improve over time
+1. Agent analyzes user query using conversation context
+2. Resolves references and pronouns (e.g., "update it" → "update SQL")
+3. Splits complex questions into focused sub-queries
+4. If ambiguous → pauses and asks user for clarification
+5. User adds clarification → agent re-analyzes with full context and proceeds
 
 ---
 
